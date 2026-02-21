@@ -5,43 +5,40 @@
     <link rel="stylesheet" href="style.css">
 
     <script>
-        /* ============================================================
-           LOAD DATA
-        ============================================================ */
         let sessionHistory = JSON.parse(localStorage.getItem("sessionHistory")) || [];
-        let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
 
-        if (sessionHistory.length === 0) {
-            alert("No session results found. Returning to attendance page.");
-            window.location.href = "attendance.html";
-        }
-
-        const latestSession = sessionHistory[sessionHistory.length - 1];
-
-        /* ============================================================
-           BUILD RESULTS TABLE
-        ============================================================ */
         function loadResults() {
-            const table = document.getElementById("resultsTable");
+            const container = document.getElementById("resultsContainer");
 
-            table.innerHTML = `
-                <tr>
-                    <th>Surname</th>
-                    <th>First Name</th>
-                    <th>Present</th>
-                    <th>Score</th>
-                </tr>
-            `;
+            if (sessionHistory.length === 0) {
+                container.innerHTML = "<p>No sessions recorded yet.</p>";
+                return;
+            }
 
-            latestSession.results.forEach(r => {
-                table.insertAdjacentHTML("beforeend", `
-                    <tr>
-                        <td>${r.surname}</td>
-                        <td>${r.firstname}</td>
-                        <td>${r.present}</td>
-                        <td>${r.present === "Yes" ? r.score : "-"}</td>
-                    </tr>
-                `);
+            sessionHistory.forEach(session => {
+                let block = `
+                    <div class="section-box">
+                        <h3>${session.date} — ${session.det}</h3>
+                        <table>
+                            <tr>
+                                <th>Surname</th>
+                                <th>First Name</th>
+                                <th>Score</th>
+                            </tr>
+                `;
+
+                session.results.forEach(r => {
+                    block += `
+                        <tr>
+                            <td>${r.surname}</td>
+                            <td>${r.firstname}</td>
+                            <td>${r.score}</td>
+                        </tr>
+                    `;
+                });
+
+                block += "</table></div>";
+                container.insertAdjacentHTML("beforeend", block);
             });
         }
 
@@ -51,19 +48,11 @@
 
 <body>
 
-    <div class="ka-header">ACF Keeping Active — Results</div>
+<div class="ka-header">ACF Keeping Active — Results</div>
 
-    <h2 class="page-title">Session Results</h2>
+<h2 class="page-title">Session Results</h2>
 
-    <div class="section-box">
-        <p><strong>Date:</strong> ${latestSession.date}</p>
-        <p><strong>Detachment:</strong> ${latestSession.det}</p>
-    </div>
-
-    <table id="resultsTable"></table>
-
-    <button class="btn btn-primary" onclick="location.href='progression.html'">View Progression →</button>
-    <button class="btn btn-secondary" onclick="location.href='admin.html'">Return to Admin</button>
+<div id="resultsContainer"></div>
 
 </body>
 </html>
