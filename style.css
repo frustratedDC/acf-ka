@@ -1,28 +1,97 @@
+/* ============================================================
+   ACF Keeping Active — Military Clean Theme
+============================================================ */
+
 body {
+    margin: 0;
     font-family: Arial, sans-serif;
+    background: #0f1a0f;
+    color: #e6e6e6;
+}
+
+.ka-header {
+    background: #1b331b;
+    color: #c7ffb0;
     padding: 20px;
     text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    border-bottom: 3px solid #2e4d2e;
 }
 
-h1, h2 {
-    margin-bottom: 20px;
+.page-title {
+    text-align: center;
+    margin-top: 20px;
+    color: #c7ffb0;
 }
 
-input {
+.section-box {
+    background: #1b331b;
+    border: 2px solid #2e4d2e;
+    padding: 15px;
+    margin: 20px;
+    border-radius: 6px;
+}
+
+.cadet-row {
+    display: block;
     padding: 10px;
-    width: 200px;
-    margin-bottom: 10px;
+    margin: 5px 0;
+    background: #142414;
+    border: 1px solid #2e4d2e;
+    border-radius: 4px;
 }
 
-button {
-    padding: 12px 20px;
-    margin: 10px;
-    font-size: 16px;
+table {
+    width: 90%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background: #142414;
+}
+
+th, td {
+    border: 1px solid #2e4d2e;
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background: #1b331b;
+    color: #c7ffb0;
+}
+
+.btn {
+    display: block;
+    width: 90%;
+    margin: 20px auto;
+    padding: 15px;
+    font-size: 18px;
+    border: none;
+    border-radius: 6px;
     cursor: pointer;
 }
 
-.menu {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.btn-primary {
+    background: #2e4d2e;
+    color: #c7ffb0;
+}
+
+.btn-primary:hover {
+    background: #3c5f3c;
+}
+
+.btn-main {
+    background: #2e4d2e;
+    color: #c7ffb0;
+}
+
+.btn-secondary {
+    background: #142414;
+    color: #c7ffb0;
+    border: 1px solid #2e4d2e;
+}
+
+.menu-container {
+    margin: 40px auto;
+    width: 90%;
 }
