@@ -1,32 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>Uploading Session</title>
+    <title>ACF Keeping Active — Session Complete</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        /* ============================================================
+           LOAD SESSION + HISTORY
+        ============================================================ */
+        let sessionData = JSON.parse(localStorage.getItem("current_session")) || null;
+        let sessionHistory = JSON.parse(localStorage.getItem("sessionHistory")) || [];
+
+        if (!sessionData) {
+            alert("No session data found.");
+            window.location.href = "index.html";
+        }
+
+        /* ============================================================
+           BUILD SUMMARY TABLE
+        ============================================================ */
+        function loadSummary() {
+            const table = document.getElementById("summaryTable");
+
+            table.innerHTML = `
+                <tr>
+                    <th>Surname</th>
+                    <th>First Name</th>
+                    <th>Score</th>
+                </tr>
+            `;
+
+            const lastSession = sessionHistory[sessionHistory.length - 1];
+            if (!lastSession) return;
+
+            lastSession.results.forEach(r => {
+                table.insertAdjacentHTML("beforeend", `
+                    <tr>
+                        <td>${r.surname}</td>
+                        <td>${r.firstname}</td>
+                        <td>${r.score}</td>
+                    </tr>
+                `);
+            });
+        }
+
+        /* ============================================================
+           UPLOAD TO ONEDRIVE (GRAPH API)
+        ============================================================ */
+        async function uploadSession() {
+            try {
+                const jsonData = JSON.stringify(sessionHistory, null, 2);
+                const blob = new Blob([jsonData], { type: "application/json" });
+
+                const accessToken = localStorage.getItem("graphAccessToken");
+                if (!accessToken) {
+                    alert("Not authenticated. Please activate first.");
+                    return;
+                }
+
+                const uploadPath = "/ACF-KeepingActive/master.json";
+
+                const response = await fetch(
+                    "https://graph.microsoft.com/v1.0/me/drive/special/approot:/" + uploadPath + ":/content",
+                    {
+                        method: "PUT",
+                        headers: {
+                            "Authorization": `Bearer ${accessToken}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: blob
+                    }
+                );
+
+                if (!response.ok) {
+                    alert("Upload failed.");
+                    return;
+                }
+
+                alert("Session uploaded successfully.");
+                localStorage.removeItem("current_session");
+                window.location.href = "index.html";
+
+            } catch (err) {
+                alert("Upload error.");
+            }
+        }
+
+        window.onload = loadSummary;
+    </script>
 </head>
+
 <body>
 
-<h2>Uploading Session…</h2>
+    <div class="ka-header">ACF Keeping Active — Session Complete</div>
 
-<script src="config.js"></script>
-<script src="graphAuth.js"></script>
-<script src="graphUpload.js"></script>
+    <h2 class="page-title">Session Summary</h2>
 
-<script>
-(async () => {
-    try {
-        const session = JSON.parse(localStorage.getItem("current_session"));
-        await uploadSession(session);
+    <div class="section-box">
+        <p><strong>Date:</strong> <span id="sessionDate"></span></p>
+        <p><strong>Detachment:</strong> <span id="sessionDet"></span></p>
+    </div>
 
-        // wipe local data
-        localStorage.removeItem("current_session");
+    <table id="summaryTable"></table>
 
-        window.location.href = "index.html";
-    } catch (err) {
-        document.body.innerHTML = "<h2>Upload failed. Try again.</h2>";
-    }
-})();
-</script>
+    <button class="btn btn-primary" onclick="uploadSession()">Upload Session →</button>
+
+    <script>
+        document.getElementById("sessionDate").textContent = sessionData.timestamp || "";
+        document.getElementById("sessionDet").textContent = sessionData.det || "Unknown";
+    </script>
 
 </body>
 </html>
