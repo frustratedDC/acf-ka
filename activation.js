@@ -3,7 +3,7 @@
 ============================================================ */
 
 function authenticateWithMicrosoft() {
-    const clientId = "YOUR_CLIENT_ID_HERE"; 
+    const clientId = "84e1338e-1d58-464e-ae78-0bfc9d918b07"; 
     const redirectUri = window.location.origin + "/activation.html";
     const scopes = "Files.ReadWrite AppFolder";
 
