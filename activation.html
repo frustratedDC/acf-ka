@@ -1,21 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Activate App</title>
+    <title>ACF Keeping Active — Activate</title>
     <link rel="stylesheet" href="style.css">
+    <script src="activation.js"></script>
 </head>
+
 <body>
 
-<h2>Enter Activation Code</h2>
+<div class="ka-header">Activate Microsoft Graph</div>
 
-<input id="activationInput" type="text" placeholder="Activation Code">
-<button onclick="activateApp()">Activate</button>
+<h2 class="page-title">Connect to OneDrive</h2>
 
-<p id="activationStatus"></p>
+<div class="section-box">
+    <p>This will allow the app to upload session data securely.</p>
+</div>
 
-<script src="config.js"></script>
-<script src="activation.js"></script>
+<button class="btn btn-primary" onclick="authenticateWithMicrosoft()">
+    Activate →
+</button>
 
 </body>
 </html>
