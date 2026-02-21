@@ -1,34 +1,19 @@
 /* ============================================================
-   Activation Logic — Single Code: LEIGH26
-   Secret is stored locally, never in GitHub
+   MICROSOFT GRAPH — AUTHENTICATION
 ============================================================ */
 
-function activateApp() {
-    const code = document.getElementById("activationInput").value.trim();
-    const status = document.getElementById("activationStatus");
+function authenticateWithMicrosoft() {
+    const clientId = "YOUR_CLIENT_ID_HERE"; 
+    const redirectUri = window.location.origin + "/activation.html";
+    const scopes = "Files.ReadWrite AppFolder";
 
-    if (code !== "LEIGH26") {
-        status.innerText = "Invalid activation code.";
-        return;
-    }
+    const authUrl =
+        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize" +
+        "?client_id=" + clientId +
+        "&response_type=token" +
+        "&redirect_uri=" + encodeURIComponent(redirectUri) +
+        "&scope=" + encodeURIComponent(scopes) +
+        "&response_mode=fragment";
 
-    // ⭐ PASTE YOUR REAL SECRET HERE ON YOUR PHONE ONLY
-    const realSecret = "<PASTE_YOUR_SECRET_HERE>";
-
-    // Store secret securely on device
-    localStorage.setItem("ka_secret", realSecret);
-
-    status.innerText = "Activated! Redirecting…";
-
-    setTimeout(() => {
-        window.location.href = "index.html";
-    }, 1000);
+    window.location.href = authUrl;
 }
-
-// Auto-redirect if already activated
-document.addEventListener("DOMContentLoaded", () => {
-    const existing = localStorage.getItem("ka_secret");
-    if (existing) {
-        window.location.href = "index.html";
-    }
-});
