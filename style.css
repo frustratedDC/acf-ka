@@ -9,6 +9,10 @@ body {
     color: #e6e6e6;
 }
 
+/* ============================================================
+   HEADER
+============================================================ */
+
 .ka-header {
     background: #1b331b;
     color: #c7ffb0;
@@ -19,11 +23,19 @@ body {
     border-bottom: 3px solid #2e4d2e;
 }
 
+/* ============================================================
+   TITLES
+============================================================ */
+
 .page-title {
     text-align: center;
     margin-top: 20px;
     color: #c7ffb0;
 }
+
+/* ============================================================
+   SECTION BOXES
+============================================================ */
 
 .section-box {
     background: #1b331b;
@@ -33,32 +45,9 @@ body {
     border-radius: 6px;
 }
 
-.cadet-row {
-    display: block;
-    padding: 10px;
-    margin: 5px 0;
-    background: #142414;
-    border: 1px solid #2e4d2e;
-    border-radius: 4px;
-}
-
-table {
-    width: 90%;
-    margin: 20px auto;
-    border-collapse: collapse;
-    background: #142414;
-}
-
-th, td {
-    border: 1px solid #2e4d2e;
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background: #1b331b;
-    color: #c7ffb0;
-}
+/* ============================================================
+   BUTTONS
+============================================================ */
 
 .btn {
     display: block;
@@ -91,7 +80,5 @@ th {
     border: 1px solid #2e4d2e;
 }
 
-.menu-container {
-    margin: 40px auto;
-    width: 90%;
-}
+.btn-secondary:hover {
+    background
