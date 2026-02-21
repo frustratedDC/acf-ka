@@ -5,197 +5,73 @@
     <link rel="stylesheet" href="style.css">
 
     <script>
-        /* ============================================================
-           ADMIN PASSWORD (SHA-256 HASHED)
-           Password: 25233872Cp!
-           ============================================================ */
+        function resetAll() {
+            if (!confirm("Are you sure? This will delete ALL data.")) return;
 
-        const ADMIN_HASH = "f3e3f3a4e6b5d1c8d2c0a1e6f4b2c8d9f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6";
+            localStorage.removeItem("sessionHistory");
+            localStorage.removeItem("previousTotals");
+            localStorage.removeItem("previousBests");
+            localStorage.removeItem("current_session");
 
-        /* SHA-256 hashing function */
-        async function sha256(message) {
-            const msgBuffer = new TextEncoder().encode(message);
-            const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+            alert("All data cleared.");
         }
 
-        /* Check password */
-        async function unlockAdmin() {
-            const input = document.getElementById("adminPassword").value;
-            const hash = await sha256(input);
+        function exportData() {
+            const data = {
+                cadetMasterList: JSON.parse(localStorage.getItem("cadetMasterList")) || [],
+                sessionHistory: JSON.parse(localStorage.getItem("sessionHistory")) || [],
+                previousTotals: JSON.parse(localStorage.getItem("previousTotals")) || {},
+                previousBests: JSON.parse(localStorage.getItem("previousBests")) || {}
+            };
 
-            if (hash === ADMIN_HASH) {
-                localStorage.setItem("adminUnlocked", "true");
-                showAdminPanel();
-            } else {
-                alert("Incorrect password.");
-            }
-        }
-
-        /* Show admin panel */
-        function showAdminPanel() {
-            document.getElementById("lockScreen").style.display = "none";
-            document.getElementById("adminPanel").style.display = "block";
-        }
-
-        /* Lock admin panel */
-        function lockAdmin() {
-            localStorage.removeItem("adminUnlocked");
-            location.reload();
-        }
-
-        /* On load */
-        window.onload = function () {
-            if (localStorage.getItem("adminUnlocked") === "true") {
-                showAdminPanel();
-            }
-        };
-
-        /* ============================================================
-           DATA MANAGEMENT FUNCTIONS
-           ============================================================ */
-
-        function clearData(key, label) {
-            if (confirm(`Are you sure you want to clear ${label}?`)) {
-                localStorage.removeItem(key);
-                alert(`${label} cleared.`);
-            }
-        }
-
-        function fullReset() {
-            if (confirm("This will erase ALL system data. Continue?")) {
-                localStorage.clear();
-                alert("System fully reset.");
-                location.reload();
-            }
-        }
-
-        /* ============================================================
-           EXPORT FUNCTIONS
-           ============================================================ */
-
-        function exportData(key, filename) {
-            const data = localStorage.getItem(key);
-            if (!data) return alert("No data to export.");
-
-            const blob = new Blob([data], { type: "application/json" });
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
 
             const a = document.createElement("a");
             a.href = url;
-            a.download = filename;
+            a.download = "ka-backup.json";
             a.click();
-
-            URL.revokeObjectURL(url);
         }
 
-        /* ============================================================
-           IMPORT FUNCTIONS
-           ============================================================ */
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        function importData(key) {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = "application/json";
+            const reader = new FileReader();
+            reader.onload = e => {
+                const data = JSON.parse(e.target.result);
 
-            input.onchange = e => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
+                localStorage.setItem("cadetMasterList", JSON.stringify(data.cadetMasterList || []));
+                localStorage.setItem("sessionHistory", JSON.stringify(data.sessionHistory || []));
+                localStorage.setItem("previousTotals", JSON.stringify(data.previousTotals || {}));
+                localStorage.setItem("previousBests", JSON.stringify(data.previousBests || {}));
 
-                reader.onload = event => {
-                    try {
-                        JSON.parse(event.target.result);
-                        localStorage.setItem(key, event.target.result);
-                        alert("Import successful.");
-                    } catch {
-                        alert("Invalid JSON file.");
-                    }
-                };
-
-                reader.readAsText(file);
+                alert("Data imported successfully.");
             };
 
-            input.click();
+            reader.readAsText(file);
         }
     </script>
 </head>
 
 <body>
 
-    <!-- HEADER -->
-    <div class="ka-header">ACF Keeping Active — Admin Panel</div>
+<div class="ka-header">ACF Keeping Active — Admin</div>
 
-    <!-- LOCK SCREEN -->
-    <div id="lockScreen" style="display:block;">
-        <div class="section-box">
-            <h2 class="page-title">Admin Access Required</h2>
+<h2 class="page-title">Admin Tools</h2>
 
-            <label>Enter Admin Password:</label>
-            <input type="password" id="adminPassword">
+<div class="section-box">
+    <button class="btn btn-primary" onclick="resetAll()">Reset All Data</button>
+</div>
 
-            <button class="btn btn-primary" onclick="unlockAdmin()">Unlock Admin Panel</button>
-        </div>
-    </div>
+<div class="section-box">
+    <button class="btn btn-primary" onclick="exportData()">Export Data</button>
+</div>
 
-    <!-- ADMIN PANEL -->
-    <div id="adminPanel" style="display:none;">
-
-        <!-- NAVIGATION -->
-        <h2 class="page-title">Navigation</h2>
-        <div class="section-box">
-            <button class="btn btn-secondary" onclick="location.href='attendance.html'">Attendance</button>
-            <button class="btn btn-secondary" onclick="location.href='scores.html'">Scores</button>
-            <button class="btn btn-secondary" onclick="location.href='completion.html'">Completion</button>
-            <button class="btn btn-secondary" onclick="location.href='results.html'">Results</button>
-            <button class="btn btn-secondary" onclick="location.href='progression.html'">Progression</button>
-            <button class="btn btn-secondary" onclick="location.href='logbook.html'">Logbook</button>
-        </div>
-
-        <!-- STAR LEVEL OVERVIEW -->
-        <h2 class="page-title">Star Level Overview</h2>
-        <div class="section-box">
-            <p>This section will display cadet star levels, totals, and progression once integrated.</p>
-        </div>
-
-        <!-- NEWS EDITOR -->
-        <h2 class="page-title">News / Announcements</h2>
-        <div class="section-box">
-            <textarea id="newsText" rows="4" placeholder="Write announcement..."></textarea>
-            <button class="btn btn-primary" onclick="localStorage.setItem('news', newsText.value); alert('Announcement saved.')">Save Announcement</button>
-        </div>
-
-        <!-- DATA MANAGEMENT -->
-        <h2 class="page-title">Data Management</h2>
-        <div class="section-box">
-            <button class="btn btn-danger" onclick="clearData('attendanceData','Attendance Data')">Clear Attendance</button>
-            <button class="btn btn-danger" onclick="clearData('scoreData','Score Data')">Clear Scores</button>
-            <button class="btn btn-danger" onclick="clearData('sessionHistory','Session History')">Clear Session History</button>
-            <button class="btn btn-danger" onclick="clearData('logbook','Logbook')">Clear Logbook</button>
-            <button class="btn btn-danger" onclick="clearData('cadetMasterList','Cadet Master List')">Clear Cadet Master List</button>
-            <button class="btn btn-admin" onclick="fullReset()">FULL SYSTEM RESET</button>
-        </div>
-
-        <!-- EXPORT TOOLS -->
-        <h2 class="page-title">Export Tools</h2>
-        <div class="section-box">
-            <button class="btn btn-secondary" onclick="exportData('cadetMasterList','cadets.json')">Export Cadet Master List</button>
-            <button class="btn btn-secondary" onclick="exportData('sessionHistory','sessions.json')">Export Session History</button>
-            <button class="btn btn-secondary" onclick="exportData('logbook','logbook.json')">Export Logbook</button>
-        </div>
-
-        <!-- IMPORT TOOLS -->
-        <h2 class="page-title">Import Tools</h2>
-        <div class="section-box">
-            <button class="btn btn-secondary" onclick="importData('cadetMasterList')">Import Cadet Master List</button>
-            <button class="btn btn-secondary" onclick="importData('sessionHistory')">Import Session History</button>
-            <button class="btn btn-secondary" onclick="importData('logbook')">Import Logbook</button>
-        </div>
-
-        <!-- LOCK BUTTON -->
-        <button class="btn btn-admin" onclick="lockAdmin()">Lock Admin Panel</button>
-
-    </div>
+<div class="section-box">
+    <p>Import Backup:</p>
+    <input type="file" accept="application/json" onchange="importData(event)">
+</div>
 
 </body>
 </html>
