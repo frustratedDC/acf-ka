@@ -5,23 +5,16 @@
     <link rel="stylesheet" href="style.css">
 
     <script>
-        /* ============================================================
-           LOAD DATA
-        ============================================================ */
-        let attendanceData = JSON.parse(localStorage.getItem("current_session")) || null;
-        let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
-        let sessionHistory = JSON.parse(localStorage.getItem("sessionHistory")) || [];
+        let sessionData = JSON.parse(localStorage.getItem("current_session")) || null;
         let previousTotals = JSON.parse(localStorage.getItem("previousTotals")) || {};
         let previousBests = JSON.parse(localStorage.getItem("previousBests")) || {};
+        let sessionHistory = JSON.parse(localStorage.getItem("sessionHistory")) || [];
 
-        if (!attendanceData || !attendanceData.attending) {
-            alert("No attendance data found. Returning to session page.");
-            window.location.href = "session.html";
+        if (!sessionData || !sessionData.attending) {
+            alert("No attendance data found.");
+            window.location.href = "attendance.html";
         }
 
-        /* ============================================================
-           BUILD SCORE TABLE
-        ============================================================ */
         function loadScoreTable() {
             const table = document.getElementById("scoreTable");
 
@@ -33,10 +26,7 @@
                 </tr>
             `;
 
-            attendanceData.attending.forEach(name => {
-                const cadet = cadetMasterList.find(c => `${c.firstname} ${c.surname}` === name);
-                if (!cadet) return;
-
+            sessionData.attending.forEach(cadet => {
                 table.insertAdjacentHTML("beforeend", `
                     <tr>
                         <td>${cadet.surname}</td>
@@ -49,47 +39,33 @@
             });
         }
 
-        /* ============================================================
-           SAVE SCORES + UPDATE TOTALS + SESSION HISTORY
-        ============================================================ */
         function saveScores() {
-            const date = attendanceData.timestamp;
-            const det = attendanceData.det || "Unknown";
+            let results = [];
 
-            let sessionResults = [];
+            sessionData.attending.forEach(cadet => {
+                const score = Number(document.getElementById(`score_${cadet.id}`).value) || 0;
 
-            attendanceData.attending.forEach(name => {
-                const cadet = cadetMasterList.find(c => `${c.firstname} ${c.surname}` === name);
-                if (!cadet) return;
-
-                let score = Number(document.getElementById(`score_${cadet.id}`).value) || 0;
-
-                /* Update totals */
                 if (!previousTotals[cadet.id]) previousTotals[cadet.id] = 0;
                 previousTotals[cadet.id] += score;
 
-                /* Update bests */
                 if (!previousBests[cadet.id] || score > previousBests[cadet.id]) {
                     previousBests[cadet.id] = score;
                 }
 
-                sessionResults.push({
+                results.push({
                     id: cadet.id,
-                    surname: cadet.surname,
                     firstname: cadet.firstname,
-                    present: "Yes",
+                    surname: cadet.surname,
                     score
                 });
             });
 
-            /* Save session history entry */
             sessionHistory.push({
-                date,
-                det,
-                results: sessionResults
+                date: sessionData.timestamp,
+                det: sessionData.det,
+                results
             });
 
-            /* Save everything */
             localStorage.setItem("previousTotals", JSON.stringify(previousTotals));
             localStorage.setItem("previousBests", JSON.stringify(previousBests));
             localStorage.setItem("sessionHistory", JSON.stringify(sessionHistory));
@@ -103,23 +79,13 @@
 
 <body>
 
-    <div class="ka-header">ACF Keeping Active — Scores</div>
+<div class="ka-header">ACF Keeping Active — Scores</div>
 
-    <h2 class="page-title">Enter Scores</h2>
+<h2 class="page-title">Enter Scores</h2>
 
-    <div class="section-box">
-        <p><strong>Session Date:</strong> <span id="sessionDate"></span></p>
-        <p><strong>Detachment:</strong> <span id="sessionDet"></span></p>
-    </div>
+<table id="scoreTable"></table>
 
-    <table id="scoreTable"></table>
-
-    <button class="btn btn-primary" onclick="saveScores()">Save Scores →</button>
-
-    <script>
-        document.getElementById("sessionDate").textContent = attendanceData.timestamp || "";
-        document.getElementById("sessionDet").textContent = attendanceData.det || "Unknown";
-    </script>
+<button class="btn btn-primary" onclick="saveScores()">Save Scores →</button>
 
 </body>
 </html>
