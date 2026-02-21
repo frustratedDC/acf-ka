@@ -192,6 +192,59 @@
         }
 
         /* ============================================================
+           BULK IMPORT CADETS FROM CSV
+        ============================================================ */
+        function importCadetsCSV(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                alert("No file selected.");
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = e => {
+                const text = e.target.result;
+                const rows = text.split(/\r?\n/).filter(r => r.trim() !== "");
+
+                const header = rows.shift().toLowerCase().trim();
+
+                if (header !== "firstname,surname") {
+                    alert("CSV must start with: firstname,surname");
+                    return;
+                }
+
+                let added = 0;
+
+                rows.forEach(row => {
+                    const parts = row.split(",");
+
+                    if (parts.length !== 2) return;
+
+                    const firstname = parts[0].trim();
+                    const surname = parts[1].trim();
+
+                    if (!firstname || !surname) return;
+
+                    cadetMasterList.push({
+                        id: Date.now() + Math.floor(Math.random() * 99999),
+                        firstname,
+                        surname
+                    });
+
+                    added++;
+                });
+
+                localStorage.setItem("cadetMasterList", JSON.stringify(cadetMasterList));
+                renderCadetList();
+
+                alert(`Imported ${added} cadets successfully.`);
+            };
+
+            reader.readAsText(file);
+        }
+
+        /* ============================================================
            DETACHMENT SETTINGS
         ============================================================ */
         function saveDetachment() {
@@ -285,6 +338,15 @@
 
     <h3>Existing Cadets</h3>
     <div id="cadetEditorList"></div>
+</div>
+
+<!-- ============================================================
+     BULK CSV IMPORT
+============================================================ -->
+<div class="admin-section">
+    <h3>Bulk Import Cadets (CSV)</h3>
+    <p>Upload a CSV with columns: firstname,surname</p>
+    <input type="file" accept=".csv" onchange="importCadetsCSV(event)">
 </div>
 
 <!-- ============================================================
