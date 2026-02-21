@@ -3,8 +3,80 @@
 <head>
     <title>ACF Keeping Active — Admin</title>
     <link rel="stylesheet" href="style.css">
+    <script src="graphUpload.js"></script>
+
+    <style>
+        /* Inline additions for admin tools */
+        .admin-section {
+            background: #1b331b;
+            border: 2px solid #2e4d2e;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 6px;
+        }
+
+        .admin-section h3 {
+            margin-top: 0;
+            color: #c7ffb0;
+        }
+
+        .input-row {
+            margin: 10px 0;
+        }
+
+        .input-row input {
+            width: 95%;
+            padding: 10px;
+            background: #142414;
+            border: 1px solid #2e4d2e;
+            color: #c7ffb0;
+            border-radius: 4px;
+        }
+
+        .small-btn {
+            padding: 8px 12px;
+            margin-left: 5px;
+            background: #2e4d2e;
+            color: #c7ffb0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .small-btn:hover {
+            background: #3c5f3c;
+        }
+    </style>
 
     <script>
+        /* ============================================================
+           PASSWORD PROTECTION
+        ============================================================ */
+        const ADMIN_PASSWORD = "ACF2025";
+
+        function unlockAdmin() {
+            const input = document.getElementById("adminPassword").value;
+            const error = document.getElementById("adminError");
+
+            if (input === ADMIN_PASSWORD) {
+                document.getElementById("adminLock").style.display = "none";
+            } else {
+                error.textContent = "Incorrect password";
+            }
+        }
+
+        /* ============================================================
+           LOAD DATA
+        ============================================================ */
+        let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
+        let sessionHistory = JSON.parse(localStorage.getItem("sessionHistory")) || [];
+        let previousTotals = JSON.parse(localStorage.getItem("previousTotals")) || {};
+        let previousBests = JSON.parse(localStorage.getItem("previousBests")) || {};
+        let detachmentName = localStorage.getItem("detachmentName") || "Your Detachment";
+
+        /* ============================================================
+           RESET ALL DATA
+        ============================================================ */
         function resetAll() {
             if (!confirm("Are you sure? This will delete ALL data.")) return;
 
@@ -16,12 +88,16 @@
             alert("All data cleared.");
         }
 
+        /* ============================================================
+           EXPORT BACKUP
+        ============================================================ */
         function exportData() {
             const data = {
-                cadetMasterList: JSON.parse(localStorage.getItem("cadetMasterList")) || [],
-                sessionHistory: JSON.parse(localStorage.getItem("sessionHistory")) || [],
-                previousTotals: JSON.parse(localStorage.getItem("previousTotals")) || {},
-                previousBests: JSON.parse(localStorage.getItem("previousBests")) || {}
+                cadetMasterList,
+                sessionHistory,
+                previousTotals,
+                previousBests,
+                detachmentName
             };
 
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -33,6 +109,9 @@
             a.click();
         }
 
+        /* ============================================================
+           IMPORT BACKUP
+        ============================================================ */
         function importData(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -45,32 +124,203 @@
                 localStorage.setItem("sessionHistory", JSON.stringify(data.sessionHistory || []));
                 localStorage.setItem("previousTotals", JSON.stringify(data.previousTotals || {}));
                 localStorage.setItem("previousBests", JSON.stringify(data.previousBests || {}));
+                localStorage.setItem("detachmentName", data.detachmentName || "Your Detachment");
 
                 alert("Data imported successfully.");
+                location.reload();
             };
 
             reader.readAsText(file);
         }
+
+        /* ============================================================
+           CADET EDITOR
+        ============================================================ */
+        function renderCadetList() {
+            const box = document.getElementById("cadetEditorList");
+            box.innerHTML = "";
+
+            cadetMasterList.forEach((c, index) => {
+                box.insertAdjacentHTML("beforeend", `
+                    <div class="cadet-row">
+                        ${c.firstname} ${c.surname}
+                        <button class="small-btn" onclick="editCadet(${index})">Edit</button>
+                        <button class="small-btn" onclick="deleteCadet(${index})">Delete</button>
+                    </div>
+                `);
+            });
+        }
+
+        function addCadet() {
+            const fn = document.getElementById("newFirst").value.trim();
+            const sn = document.getElementById("newLast").value.trim();
+
+            if (!fn || !sn) {
+                alert("Enter both first and last name.");
+                return;
+            }
+
+            cadetMasterList.push({
+                id: Date.now(),
+                firstname: fn,
+                surname: sn
+            });
+
+            localStorage.setItem("cadetMasterList", JSON.stringify(cadetMasterList));
+            renderCadetList();
+        }
+
+        function editCadet(index) {
+            const newFN = prompt("New first name:", cadetMasterList[index].firstname);
+            const newSN = prompt("New surname:", cadetMasterList[index].surname);
+
+            if (!newFN || !newSN) return;
+
+            cadetMasterList[index].firstname = newFN;
+            cadetMasterList[index].surname = newSN;
+
+            localStorage.setItem("cadetMasterList", JSON.stringify(cadetMasterList));
+            renderCadetList();
+        }
+
+        function deleteCadet(index) {
+            if (!confirm("Delete this cadet?")) return;
+
+            cadetMasterList.splice(index, 1);
+            localStorage.setItem("cadetMasterList", JSON.stringify(cadetMasterList));
+            renderCadetList();
+        }
+
+        /* ============================================================
+           DETACHMENT SETTINGS
+        ============================================================ */
+        function saveDetachment() {
+            const name = document.getElementById("detName").value.trim();
+            if (!name) return;
+
+            localStorage.setItem("detachmentName", name);
+            alert("Detachment updated.");
+        }
+
+        /* ============================================================
+           CSV EXPORT
+        ============================================================ */
+        function exportCSV() {
+            let csv = "Surname,First Name,Total,Best\n";
+
+            cadetMasterList.forEach(c => {
+                csv += `${c.surname},${c.firstname},${previousTotals[c.id] || 0},${previousBests[c.id] || 0}\n`;
+            });
+
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "ka-progress.csv";
+            a.click();
+        }
+
+        /* ============================================================
+           PRINT MODE
+        ============================================================ */
+        function printPage() {
+            window.print();
+        }
+
+        /* ============================================================
+           INIT
+        ============================================================ */
+        window.onload = () => {
+            document.getElementById("detName").value = detachmentName;
+            renderCadetList();
+        };
     </script>
 </head>
 
 <body>
 
+<!-- ============================================================
+     PASSWORD LOCK
+============================================================ -->
+<div id="adminLock" class="lock-screen">
+    <div class="lock-box">
+        <h2>Admin Access</h2>
+        <p>Enter password to continue</p>
+        <input type="password" id="adminPassword" placeholder="Password">
+        <button class="btn btn-primary" onclick="unlockAdmin()">Unlock</button>
+        <p id="adminError" class="error-text"></p>
+    </div>
+</div>
+
 <div class="ka-header">ACF Keeping Active — Admin</div>
 
-<h2 class="page-title">Admin Tools</h2>
+<h2 class="page-title">Administration Panel</h2>
 
-<div class="section-box">
-    <button class="btn btn-primary" onclick="resetAll()">Reset All Data</button>
+<!-- ============================================================
+     DETACHMENT SETTINGS
+============================================================ -->
+<div class="admin-section">
+    <h3>Detachment Settings</h3>
+    <div class="input-row">
+        <input id="detName" placeholder="Detachment Name">
+    </div>
+    <button class="btn btn-primary" onclick="saveDetachment()">Save Detachment</button>
 </div>
 
-<div class="section-box">
-    <button class="btn btn-primary" onclick="exportData()">Export Data</button>
+<!-- ============================================================
+     CADET EDITOR
+============================================================ -->
+<div class="admin-section">
+    <h3>Cadet Editor</h3>
+
+    <div class="input-row">
+        <input id="newFirst" placeholder="First Name">
+    </div>
+    <div class="input-row">
+        <input id="newLast" placeholder="Surname">
+    </div>
+
+    <button class="btn btn-primary" onclick="addCadet()">Add Cadet</button>
+
+    <h3>Existing Cadets</h3>
+    <div id="cadetEditorList"></div>
 </div>
 
-<div class="section-box">
+<!-- ============================================================
+     BACKUP / RESTORE
+============================================================ -->
+<div class="admin-section">
+    <h3>Backup & Restore</h3>
+
+    <button class="btn btn-primary" onclick="exportData()">Export Backup</button>
+
     <p>Import Backup:</p>
     <input type="file" accept="application/json" onchange="importData(event)">
+</div>
+
+<!-- ============================================================
+     CSV EXPORT
+============================================================ -->
+<div class="admin-section">
+    <h3>Export CSV</h3>
+    <button class="btn btn-primary" onclick="exportCSV()">Download CSV</button>
+</div>
+
+<!-- ============================================================
+     RESET ALL DATA
+============================================================ -->
+<div class="admin-section">
+    <h3>Danger Zone</h3>
+    <button class="btn btn-primary" onclick="resetAll()">Reset ALL Data</button>
+</div>
+
+<!-- ============================================================
+     PRINT
+============================================================ -->
+<div class="admin-section">
+    <h3>Print</h3>
+    <button class="btn btn-primary" onclick="printPage()">Print This Page</button>
 </div>
 
 </body>
