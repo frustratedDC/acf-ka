@@ -2,7 +2,7 @@ const KA_CONFIG = {
     tenantId: "d9afa355-7e61-4e3a-9cd3-6d9016b4b6bf",
     clientId: "84e1338e-1d58-464e-ae78-0bfc9d918b07",
 
-    // Secret will be loaded locally
+    // Secret injected at runtime
     clientSecret: null,
 
     drivePath: "/Apps/ACF Keeping Active Tracker",
