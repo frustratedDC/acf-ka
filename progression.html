@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ACF Keeping Active — Progression</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        /* ============================================================
+           LOAD DATA
+        ============================================================ */
+        let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
+        let previousTotals = JSON.parse(localStorage.getItem("previousTotals")) || {};
+        let previousBests = JSON.parse(localStorage.getItem("previousBests")) || {};
+
+        /* ============================================================
+           STAR LEVEL LOGIC
+           (You can adjust these thresholds anytime)
+        ============================================================ */
+        function getStarLevel(total) {
+            if (total >= 150) return "⭐ 4 Star";
+            if (total >= 100) return "⭐ 3 Star";
+            if (total >= 50)  return "⭐ 2 Star";
+            if (total >= 20)  return "⭐ 1 Star";
+            return "—";
+        }
+
+        /* ============================================================
+           BUILD PROGRESSION TABLE
+        ============================================================ */
+        function loadProgression() {
+            const table = document.getElementById("progressionTable");
+
+            table.innerHTML = `
+                <tr>
+                    <th>Surname</th>
+                    <th>First Name</th>
+                    <th>Total Points</th>
+                    <th>Best Score</th>
+                    <th>Star Level</th>
+                </tr>
+            `;
+
+            cadetMasterList.forEach(cadet => {
+                const total = previousTotals[cadet.id] || 0;
+                const best = previousBests[cadet.id] || 0;
+                const star = getStarLevel(total);
+
+                table.insertAdjacentHTML("beforeend", `
+                    <tr>
+                        <td>${cadet.surname}</td>
+                        <td>${cadet.firstname}</td>
+                        <td>${total}</td>
+                        <td>${best}</td>
+                        <td>${star}</td>
+                    </tr>
+                `);
+            });
+        }
+
+        window.onload = loadProgression;
+    </script>
+</head>
+
+<body>
+
+    <div class="ka-header">ACF Keeping Active — Progression</div>
+
+    <h2 class="page-title">Cadet Progression Overview</h2>
+
+    <div class="section-box">
+        <p>This page shows each cadet’s total points

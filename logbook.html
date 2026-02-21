@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ACF Keeping Active — Logbook</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        /* ============================================================
+           LOAD DATA
+        ============================================================ */
+        let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
+        let logbook = JSON.parse(localStorage.getItem("logbook")) || {};
+
+        /* ============================================================
+           POPULATE CADET DROPDOWN
+        ============================================================ */
+        function loadCadetDropdown() {
+            const select = document.getElementById("cadetSelect");
+            select.innerHTML = "";
+
+            cadetMasterList.forEach(cadet => {
+                select.insertAdjacentHTML("beforeend", `
+                    <option value="${cadet.id}">
+                        ${cadet.surname}, ${cadet.firstname}
+                    </option>
+                `);
+            });
+
+            loadLogbookEntries();
+        }
+
+        /* ============================================================
+           LOAD LOGBOOK ENTRIES FOR SELECTED CADET
+        ============================================================ */
+        function loadLogbookEntries() {
+            const cadetId = document.getElementById("cadetSelect").value;
+            const table = document.getElementById("logbookTable");
+
+            table.innerHTML = `
+                <tr>
+                    <th>Date</th>
+                    <th>Activity</th>
+                    <th>Notes</th>
+                </tr>
+            `;
+
+            if (!logbook[cadetId] || logbook[cadetId].length === 0) {
+                table.insertAdjacentHTML("beforeend", `
+                    <tr><td colspan="3">No logbook entries yet.</td></tr>
+                `);
+                return;
+            }
+
+            logbook[cadetId].forEach(entry => {
+                table.insertAdjacentHTML("beforeend", `
+                    <tr>
+                        <td>${entry.date}</td>
+                        <td>${entry.activity}</td>
+                        <td>${entry.notes}</td>
+                    </tr>
+                `);
+            });
+        }
+
+        /* ============================================================
+           ADD NEW LOGBOOK ENTRY
+        ============================================================ */
+        function addLogbookEntry() {
+            const cadetId = document.getElementById("cadetSelect").value;
+            const activity = document.getElementById("activityInput").value.trim();
+            const notes = document.getElementById("notesInput").value.trim();
+            const date = new Date().toLocaleDateString("en-GB");
+
+            if (!activity) {
+                alert("Please enter an activity.");
+                return;
+            }
+
+            if (!logbook[cadetId]) logbook[cadetId] = [];
+
+            logbook[cadetId].push({
+                date,
+                activity,
+                notes
+            });
+
+            localStorage.setItem("logbook", JSON.stringify(logbook));
+
+            document.getElementById("activityInput").value = "";
+            document.getElementById("notesInput").value = "";
+
+            loadLogbookEntries();
+        }
+
+        window.onload = loadCadetDropdown;
+    </script>
+</head>
+
+<body>
+
+    <div class="ka-header">ACF Keeping Active — Logbook</div>
+
+    <h2 class="page-title">Cadet Logbook</h2>
+
+    <!-- SELECT CADET -->
+    <div class="section-box">
+        <label>Select Cadet:</label>
+        <select id="cadetSelect" onchange="loadLogbookEntries()"></select>
+    </div>
+
+    <!-- LOGBOOK TABLE -->
+    <table id="logbookTable"></table>
+
+    <!-- ADD ENTRY -->
+    <h2 class="page-title">Add Logbook Entry</h2>
+
+    <div class="section-box">
+        <label>Activity:</label>
+        <input type="text" id="activityInput" placeholder="e.g., 1-mile run, circuit training">
+
+        <label>Notes (optional):</label>
+        <textarea id="notesInput" rows="3" placeholder="Any additional notes..."></textarea>
+
+        <button class="btn btn-primary" onclick="addLogbookEntry()">Add Entry</button>
+    </div>
+
+    <button class="btn btn-secondary" onclick="location.href='admin.html'">Return to Admin</button>
+
+</body>
+</html>

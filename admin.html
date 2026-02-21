@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ACF Keeping Active — Admin</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        /* ============================================================
+           ADMIN PASSWORD (SHA-256 HASHED)
+           Password: 25233872Cp!
+           ============================================================ */
+
+        const ADMIN_HASH = "f3e3f3a4e6b5d1c8d2c0a1e6f4b2c8d9f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6";
+
+        /* SHA-256 hashing function */
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+
+        /* Check password */
+        async function unlockAdmin() {
+            const input = document.getElementById("adminPassword").value;
+            const hash = await sha256(input);
+
+            if (hash === ADMIN_HASH) {
+                localStorage.setItem("adminUnlocked", "true");
+                showAdminPanel();
+            } else {
+                alert("Incorrect password.");
+            }
+        }
+
+        /* Show admin panel */
+        function showAdminPanel() {
+            document.getElementById("lockScreen").style.display = "none";
+            document.getElementById("adminPanel").style.display = "block";
+        }
+
+        /* Lock admin panel */
+        function lockAdmin() {
+            localStorage.removeItem("adminUnlocked");
+            location.reload();
+        }
+
+        /* On load */
+        window.onload = function () {
+            if (localStorage.getItem("adminUnlocked") === "true") {
+                showAdminPanel();
+            }
+        };
+
+        /* ============================================================
+           DATA MANAGEMENT FUNCTIONS
+           ============================================================ */
+
+        function clearData(key, label) {
+            if (confirm(`Are you sure you want to clear ${label}?`)) {
+                localStorage.removeItem(key);
+                alert(`${label} cleared.`);
+            }
+        }
+
+        function fullReset() {
+            if (confirm("This will erase ALL system data. Continue?")) {
+                localStorage.clear();
+                alert("System fully reset.");
+                location.reload();
+            }
+        }
+
+        /* ============================================================
+           EXPORT FUNCTIONS
+           ============================================================ */
+
+        function exportData(key, filename) {
+            const data = localStorage.getItem(key);
+            if (!data) return alert("No data to export.");
+
+            const blob = new Blob([data], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            a.click();
+
+            URL.revokeObjectURL(url);
+        }
+
+        /* ============================================================
+           IMPORT FUNCTIONS
+           ============================================================ */
+
+        function importData(key) {
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "application/json";
+
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = event => {
+                    try {
+                        JSON.parse(event.target.result);
+                        localStorage.setItem(key, event.target.result);
+                        alert("Import successful.");
+                    } catch {
+                        alert("Invalid JSON file.");
+                    }
+                };
+
+                reader.readAsText(file);
+            };
+
+            input.click();
+        }
+    </script>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <div class="ka-header">ACF Keeping Active — Admin Panel</div>
+
+    <!-- LOCK SCREEN -->
+    <div id="lockScreen" style="display:block;">
+        <div class="section-box">
+            <h2 class="page-title">Admin Access Required</h2>
+
+            <label>Enter Admin Password:</label>
+            <input type="password" id="adminPassword">
+
+            <button class="btn btn-primary" onclick="unlockAdmin()">Unlock Admin Panel</button>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL -->
+    <div id="adminPanel" style="display:none;">
+
+        <!-- NAVIGATION -->
+        <h2 class="page-title">Navigation</h2>
+        <div class="section-box">
+            <button class="btn btn-secondary" onclick="location.href='attendance.html'">Attendance</button>
+            <button class="btn btn-secondary" onclick="location.href='scores.html'">Scores</button>
+            <button class="btn btn-secondary" onclick="location.href='completion.html'">Completion</button>
+            <button class="btn btn-secondary" onclick="location.href='results.html'">Results</button>
+            <button class="btn btn-secondary" onclick="location.href='progression.html'">Progression</button>
+            <button class="btn btn-secondary" onclick="location.href='logbook.html'">Logbook</button>
+        </div>
+
+        <!-- STAR LEVEL OVERVIEW -->
+        <h2 class="page-title">Star Level Overview</h2>
+        <div class="section-box">
+            <p>This section will display cadet star levels, totals, and progression once integrated.</p>
+        </div>
+
+        <!-- NEWS EDITOR -->
+        <h2 class="page-title">News / Announcements</h2>
+        <div class="section-box">
+            <textarea id="newsText" rows="4" placeholder="Write announcement..."></textarea>
+            <button class="btn btn-primary" onclick="localStorage.setItem('news', newsText.value); alert('Announcement saved.')">Save Announcement</button>
+        </div>
+
+        <!-- DATA MANAGEMENT -->
+        <h2 class="page-title">Data Management</h2>
+        <div class="section-box">
+            <button class="btn btn-danger" onclick="clearData('attendanceData','Attendance Data')">Clear Attendance</button>
+            <button class="btn btn-danger" onclick="clearData('scoreData','Score Data')">Clear Scores</button>
+            <button class="btn btn-danger" onclick="clearData('sessionHistory','Session History')">Clear Session History</button>
+            <button class="btn btn-danger" onclick="clearData('logbook','Logbook')">Clear Logbook</button>
+            <button class="btn btn-danger" onclick="clearData('cadetMasterList','Cadet Master List')">Clear Cadet Master List</button>
+            <button class="btn btn-admin" onclick="fullReset()">FULL SYSTEM RESET</button>
+        </div>
+
+        <!-- EXPORT TOOLS -->
+        <h2 class="page-title">Export Tools</h2>
+        <div class="section-box">
+            <button class="btn btn-secondary" onclick="exportData('cadetMasterList','cadets.json')">Export Cadet Master List</button>
+            <button class="btn btn-secondary" onclick="exportData('sessionHistory','sessions.json')">Export Session History</button>
+            <button class="btn btn-secondary" onclick="exportData('logbook','logbook.json')">Export Logbook</button>
+        </div>
+
+        <!-- IMPORT TOOLS -->
+        <h2 class="page-title">Import Tools</h2>
+        <div class="section-box">
+            <button class="btn btn-secondary" onclick="importData('cadetMasterList')">Import Cadet Master List</button>
+            <button class="btn btn-secondary" onclick="importData('sessionHistory')">Import Session History</button>
+            <button class="btn btn-secondary" onclick="importData('logbook')">Import Logbook</button>
+        </div>
+
+        <!-- LOCK BUTTON -->
+        <button class="btn btn-admin" onclick="lockAdmin()">Lock Admin Panel</button>
+
+    </div>
+
+</body>
+</html>

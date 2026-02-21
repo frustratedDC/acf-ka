@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ACF Keeping Active — Completion</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        /* ============================================================
+           LOAD DATA
+        ============================================================ */
+        let attendanceData = JSON.parse(localStorage.getItem("attendanceData")) || null;
+        let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
+        let sessionHistory = JSON.parse(localStorage.getItem("sessionHistory")) || [];
+
+        if (!attendanceData) {
+            alert("No attendance data found. Returning to attendance page.");
+            window.location.href = "attendance.html";
+        }
+
+        /* ============================================================
+           BUILD SUMMARY TABLE
+        ============================================================ */
+        function loadSummary() {
+            const table = document.getElementById("summaryTable");
+
+            table.innerHTML = `
+                <tr>
+                    <th>Surname</th>
+                    <th>First Name</th>
+                    <th>Present</th>
+                    <th>Score</th>
+                </tr>
+            `;
+
+            const latestSession = sessionHistory[sessionHistory.length - 1];
+            if (!latestSession) return;
+
+            latestSession.results.forEach(r => {
+                table.insertAdjacentHTML("beforeend", `
+                    <tr>
+                        <td>${r.surname}</td>
+                        <td>${r.firstname}</td>
+                        <td>${r.present}</td>
+                        <td>${r.present === "Yes" ? r.score : "-"}</td>
+                    </tr>
+                `);
+            });
+        }
+
+        /* ============================================================
+           CONFIRM SESSION
+        ============================================================ */
+        function confirmSession() {
+            alert("Session completed and saved.");
+            window.location.href = "results.html";
+        }
+
+        window.onload = loadSummary;
+    </script>
+</head>
+
+<body>
+
+    <div class="ka-header">ACF Keeping Active — Session Summary</div>
+
+    <h2 class="page-title">Session Overview</h2>
+
+    <div class="section-box">
+        <p><strong>Date:</strong> ${attendanceData ? attendanceData.sessionDate : ""}</p>
+        <p><strong>Detachment:</strong> ${attendanceData ? attendanceData.det : ""}</p>
+    </div>
+
+    <table id="summaryTable"></table>
+
+    <button class="btn btn-primary" onclick="confirmSession()">Confirm & Continue →</button>
+
+</body>
+</html>

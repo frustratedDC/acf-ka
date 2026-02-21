@@ -1,0 +1,220 @@
+/* ============================================================
+   ACF KEEPING ACTIVE — UNIVERSAL STYLE SHEET
+   Modern Blue × Army Green Hybrid Theme
+   Applies to ALL pages in the KA System
+   ============================================================ */
+
+/* ------------------------------
+   GLOBAL RESET & BASE STYLES
+--------------------------------*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    padding: 20px;
+    color: #222;
+}
+
+/* ------------------------------
+   BRANDING HEADER
+--------------------------------*/
+.ka-header {
+    background: #002B80; /* Navy */
+    color: white;
+    padding: 15px 20px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+    text-align: center;
+    font-size: 26px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* ------------------------------
+   SECTION BOXES
+--------------------------------*/
+.section-box {
+    background: #F9F9F9;
+    border: 2px solid #556B2F; /* Army Green */
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    max-width: 600px;
+    width: 100%;
+}
+
+/* ------------------------------
+   LABELS & INPUTS
+--------------------------------*/
+label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
+}
+
+input, select, textarea {
+    padding: 10px;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+/* ------------------------------
+   BUTTONS
+--------------------------------*/
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+    width: 100%;
+    max-width: 350px;
+    margin-top: 15px;
+    display: block;
+}
+
+/* Primary Action */
+.btn-primary {
+    background: #007BFF; /* Modern Blue */
+    color: white;
+}
+.btn-primary:hover {
+    background: #005FCC;
+}
+
+/* Secondary Action */
+.btn-secondary {
+    background: #556B2F; /* Army Green */
+    color: white;
+}
+.btn-secondary:hover {
+    background: #445624;
+}
+
+/* Danger Button */
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+.btn-danger:hover {
+    background: #b02a37;
+}
+
+/* Admin Button */
+.btn-admin {
+    background: #002B80; /* Navy */
+    color: white;
+}
+.btn-admin:hover {
+    background: #001f5c;
+}
+
+/* ------------------------------
+   TABLES
+--------------------------------*/
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    table-layout: fixed;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    font-size: 16px;
+    word-wrap: break-word;
+}
+
+th {
+    background: #EAEAEA;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background: #f7f7f7;
+}
+
+/* ------------------------------
+   TOGGLES (YES/NO)
+--------------------------------*/
+.toggle {
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 5px;
+    color: white;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.yes {
+    background: #28a745;
+}
+
+.no {
+    background: #dc3545;
+}
+
+/* ------------------------------
+   PAGE TITLES
+--------------------------------*/
+.page-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #002B80;
+}
+
+/* ------------------------------
+   RESPONSIVE DESIGN
+--------------------------------*/
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .btn {
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    input, select {
+        font-size: 15px;
+        padding: 8px;
+    }
+
+    .toggle {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+
+    .ka-header {
+        font-size: 22px;
+        padding: 12px;
+    }
+}
+
+/* ------------------------------
+   FOOTER (OPTIONAL)
+--------------------------------*/
+.ka-footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 14px;
+    color: #556B2F;
+}

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ACF Keeping Active — Scores</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        /* ============================================================
+           LOAD DATA
+        ============================================================ */
+        let attendanceData = JSON.parse(localStorage.getItem("attendanceData")) || null;
+        let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
+        let sessionHistory = JSON.parse(localStorage.getItem("sessionHistory")) || [];
+        let previousTotals = JSON.parse(localStorage.getItem("previousTotals")) || {};
+        let previousBests = JSON.parse(localStorage.getItem("previousBests")) || {};
+
+        if (!attendanceData) {
+            alert("No attendance data found. Returning to attendance page.");
+            window.location.href = "attendance.html";
+        }
+
+        /* ============================================================
+           BUILD SCORE TABLE
+        ============================================================ */
+        function loadScoreTable() {
+            const table = document.getElementById("scoreTable");
+
+            table.innerHTML = `
+                <tr>
+                    <th>Surname</th>
+                    <th>First Name</th>
+                    <th>Score (0–10)</th>
+                </tr>
+            `;
+
+            attendanceData.attendees.forEach(entry => {
+                const cadet = cadetMasterList.find(c => c.id === entry.id);
+                if (!cadet) return;
+
+                if (entry.present === "No") return;
+
+                table.insertAdjacentHTML("beforeend", `
+                    <tr>
+                        <td>${cadet.surname}</td>
+                        <td>${cadet.firstname}</td>
+                        <td>
+                            <input type="number" min="0" max="10" value="0" id="score_${cadet.id}">
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        /* ============================================================
+           SAVE SCORES + UPDATE TOTALS + SESSION HISTORY
+        ============================================================ */
+        function saveScores() {
+            const date = attendanceData.sessionDate;
+            const det = attendanceData.det;
+
+            let sessionResults = [];
+
+            attendanceData.attendees.forEach(entry => {
+                const cadet = cadetMasterList.find(c => c.id === entry.id);
+                if (!cadet) return;
+
+                let score = 0;
+                if (entry.present === "Yes") {
+                    score = Number(document.getElementById(`score_${cadet.id}`).value) || 0;
+                }
+
+                /* Update totals */
+                if (!previousTotals[cadet.id]) previousTotals[cadet.id] = 0;
+                previousTotals[cadet.id] += score;
+
+                /* Update bests */
+                if (!previousBests[cadet.id] || score > previousBests[cadet.id]) {
+                    previousBests[cadet.id] = score;
+                }
+
+                sessionResults.push({
+                    id: cadet.id,
+                    surname: cadet.surname,
+                    firstname: cadet.firstname,
+                    present: entry.present,
+                    score
+                });
+            });
+
+            /* Save session history entry */
+            sessionHistory.push({
+                date,
+                det,
+                results: sessionResults
+            });
+
+            /* Save everything */
+            localStorage.setItem("previousTotals", JSON.stringify(previousTotals));
+            localStorage.setItem("previousBests", JSON.stringify(previousBests));
+            localStorage.setItem("sessionHistory", JSON.stringify(sessionHistory));
+
+            window.location.href = "completion.html";
+        }
+
+        window.onload = loadScoreTable;
+    </script>
+</head>
+
+<body>
+
+    <div class="ka-header">ACF Keeping Active — Scores</div>
+
+    <h2 class="page-title">Enter Scores</h2>
+
+    <div class="section-box">
+        <p><strong>Session Date:</strong> ${attendanceData ? attendanceData.sessionDate : ""}</p>
+        <p><strong>Detachment:</strong> ${attendanceData ? attendanceData.det : ""}</p>
+    </div>
+
+    <table id="scoreTable"></table>
+
+    <button class="btn btn-primary" onclick="saveScores()">Save Scores →</button>
+
+</body>
+</html>
