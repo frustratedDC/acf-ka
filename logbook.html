@@ -5,126 +5,58 @@
     <link rel="stylesheet" href="style.css">
 
     <script>
-        /* ============================================================
-           LOAD DATA
-        ============================================================ */
         let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
-        let logbook = JSON.parse(localStorage.getItem("logbook")) || {};
+        let sessionHistory = JSON.parse(localStorage.getItem("sessionHistory")) || [];
 
-        /* ============================================================
-           POPULATE CADET DROPDOWN
-        ============================================================ */
-        function loadCadetDropdown() {
-            const select = document.getElementById("cadetSelect");
-            select.innerHTML = "";
+        function loadLogbook() {
+            const container = document.getElementById("logContainer");
+
+            if (sessionHistory.length === 0) {
+                container.innerHTML = "<p>No sessions recorded yet.</p>";
+                return;
+            }
 
             cadetMasterList.forEach(cadet => {
-                select.insertAdjacentHTML("beforeend", `
-                    <option value="${cadet.id}">
-                        ${cadet.surname}, ${cadet.firstname}
-                    </option>
-                `);
-            });
+                let block = `
+                    <div class="section-box">
+                        <h3>${cadet.firstname} ${cadet.surname}</h3>
+                        <table>
+                            <tr>
+                                <th>Date</th>
+                                <th>Det</th>
+                                <th>Score</th>
+                            </tr>
+                `;
 
-            loadLogbookEntries();
-        }
+                sessionHistory.forEach(session => {
+                    const entry = session.results.find(r => r.id === cadet.id);
+                    if (entry) {
+                        block += `
+                            <tr>
+                                <td>${session.date}</td>
+                                <td>${session.det}</td>
+                                <td>${entry.score}</td>
+                            </tr>
+                        `;
+                    }
+                });
 
-        /* ============================================================
-           LOAD LOGBOOK ENTRIES FOR SELECTED CADET
-        ============================================================ */
-        function loadLogbookEntries() {
-            const cadetId = document.getElementById("cadetSelect").value;
-            const table = document.getElementById("logbookTable");
-
-            table.innerHTML = `
-                <tr>
-                    <th>Date</th>
-                    <th>Activity</th>
-                    <th>Notes</th>
-                </tr>
-            `;
-
-            if (!logbook[cadetId] || logbook[cadetId].length === 0) {
-                table.insertAdjacentHTML("beforeend", `
-                    <tr><td colspan="3">No logbook entries yet.</td></tr>
-                `);
-                return;
-            }
-
-            logbook[cadetId].forEach(entry => {
-                table.insertAdjacentHTML("beforeend", `
-                    <tr>
-                        <td>${entry.date}</td>
-                        <td>${entry.activity}</td>
-                        <td>${entry.notes}</td>
-                    </tr>
-                `);
+                block += "</table></div>";
+                container.insertAdjacentHTML("beforeend", block);
             });
         }
 
-        /* ============================================================
-           ADD NEW LOGBOOK ENTRY
-        ============================================================ */
-        function addLogbookEntry() {
-            const cadetId = document.getElementById("cadetSelect").value;
-            const activity = document.getElementById("activityInput").value.trim();
-            const notes = document.getElementById("notesInput").value.trim();
-            const date = new Date().toLocaleDateString("en-GB");
-
-            if (!activity) {
-                alert("Please enter an activity.");
-                return;
-            }
-
-            if (!logbook[cadetId]) logbook[cadetId] = [];
-
-            logbook[cadetId].push({
-                date,
-                activity,
-                notes
-            });
-
-            localStorage.setItem("logbook", JSON.stringify(logbook));
-
-            document.getElementById("activityInput").value = "";
-            document.getElementById("notesInput").value = "";
-
-            loadLogbookEntries();
-        }
-
-        window.onload = loadCadetDropdown;
+        window.onload = loadLogbook;
     </script>
 </head>
 
 <body>
 
-    <div class="ka-header">ACF Keeping Active — Logbook</div>
+<div class="ka-header">ACF Keeping Active — Logbook</div>
 
-    <h2 class="page-title">Cadet Logbook</h2>
+<h2 class="page-title">Cadet Logbook</h2>
 
-    <!-- SELECT CADET -->
-    <div class="section-box">
-        <label>Select Cadet:</label>
-        <select id="cadetSelect" onchange="loadLogbookEntries()"></select>
-    </div>
-
-    <!-- LOGBOOK TABLE -->
-    <table id="logbookTable"></table>
-
-    <!-- ADD ENTRY -->
-    <h2 class="page-title">Add Logbook Entry</h2>
-
-    <div class="section-box">
-        <label>Activity:</label>
-        <input type="text" id="activityInput" placeholder="e.g., 1-mile run, circuit training">
-
-        <label>Notes (optional):</label>
-        <textarea id="notesInput" rows="3" placeholder="Any additional notes..."></textarea>
-
-        <button class="btn btn-primary" onclick="addLogbookEntry()">Add Entry</button>
-    </div>
-
-    <button class="btn btn-secondary" onclick="location.href='admin.html'">Return to Admin</button>
+<div id="logContainer"></div>
 
 </body>
 </html>
