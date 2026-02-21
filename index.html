@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KA Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+<h1>Keeping Active</h1>
+
+<div class="menu">
+    <button onclick="startSession()">Start New Session</button>
+    <button onclick="window.location.href='admin.html'">Admin Panel</button>
+</div>
+
+<script>
+function startSession() {
+    // Create a blank session object
+    const session = {
+        timestamp: new Date().toISOString(),
+        cadets: []
+    };
+
+    localStorage.setItem("current_session", JSON.stringify(session));
+    window.location.href = "session.html"; // your session page
+}
+</script>
+
+<script src="service-worker.js"></script>
+
+</body>
+</html>
