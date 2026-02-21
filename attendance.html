@@ -1,254 +1,68 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Attendance</title>
-    <style>
-        body { font-family: Arial; padding: 20px; }
+    <title>ACF Keeping Active — Attendance</title>
+    <link rel="stylesheet" href="style.css">
 
-        h1 { margin-bottom: 20px; }
+    <script>
+        let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
 
-        .section-box {
-            border: 1px solid #ccc;
-            padding: 15px;
-            border-radius: 6px;
-            background: #f9f9f9;
-            margin-bottom: 20px;
-            width: 350px;
+        function loadCadets() {
+            const list = document.getElementById("cadetList");
+            list.innerHTML = "";
+
+            cadetMasterList.forEach(cadet => {
+                list.insertAdjacentHTML("beforeend", `
+                    <label class="cadet-row">
+                        <input type="checkbox" id="cadet_${cadet.id}">
+                        ${cadet.firstname} ${cadet.surname}
+                    </label>
+                `);
+            });
         }
 
-        label { font-weight: bold; display: block; margin-top: 10px; }
+        function saveAttendance() {
+            const attending = [];
 
-        input, select {
-            padding: 8px;
-            width: 100%;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            cadetMasterList.forEach(cadet => {
+                if (document.getElementById(`cadet_${cadet.id}`).checked) {
+                    attending.push({
+                        id: cadet.id,
+                        firstname: cadet.firstname,
+                        surname: cadet.surname
+                    });
+                }
+            });
+
+            if (attending.length === 0) {
+                alert("Select at least one cadet.");
+                return;
+            }
+
+            const session = {
+                timestamp: new Date().toISOString().split("T")[0],
+                det: "Your Detachment",
+                attending,
+                scores: {}
+            };
+
+            localStorage.setItem("current_session", JSON.stringify(session));
+            window.location.href = "scores.html";
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
-
-        th { background: #eaeaea; }
-
-        .toggle {
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 5px;
-            color: white;
-        }
-
-        .yes { background: #28a745; }
-        .no { background: #dc3545; }
-
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 18px;
-            margin-top: 15px;
-        }
-
-        #saveNextBtn { background: #007BFF; color: white; }
-        #addBtn { background: #28a745; color: white; margin-top: 10px; }
-    </style>
+        window.onload = loadCadets;
+    </script>
 </head>
+
 <body>
 
-<h1>Attendance</h1>
+<div class="ka-header">ACF Keeping Active — Attendance</div>
 
-<!-- SESSION HEADER -->
-<div class="section-box">
-    <label>Session Date:</label>
-    <input type="date" id="sessionDate">
+<h2 class="page-title">Select Cadets Present</h2>
 
-    <label>Detachment:</label>
-    <select id="detSelect" onchange="loadNominalRoll()">
-        <option value="">Select Detachment</option>
-    </select>
-</div>
+<div id="cadetList" class="section-box"></div>
 
-<!-- NOMINAL ROLL -->
-<h2>Nominal Roll</h2>
-<table id="nominalTable">
-    <tr>
-        <th>Surname</th>
-        <th>First Name</th>
-        <th>Present</th>
-    </tr>
-</table>
-
-<!-- ADD NEW ENTRY -->
-<h2>Add New Cadet</h2>
-<div class="section-box">
-    <label>Surname:</label>
-    <input id="newSurname">
-
-    <label>First Name:</label>
-    <input id="newFirstname">
-
-    <label>Rank (optional):</label>
-    <input id="newRank">
-
-    <button id="addBtn" onclick="addCadet()">Add Cadet</button>
-</div>
-
-<!-- SAVE & NEXT -->
-<button id="saveNextBtn" class="btn" onclick="saveAndNext()">Save & Next →</button>
-
-<script>
-/* Load master list */
-let cadetMasterList = JSON.parse(localStorage.getItem("cadetMasterList")) || [];
-
-/* Clear previous session attendance */
-localStorage.removeItem("attendanceData");
-
-/* Populate det selector */
-function loadDetOptions() {
-    const detSelect = document.getElementById("detSelect");
-    detSelect.innerHTML = `<option value="">Select Detachment</option>`;
-
-    const dets = [...new Set(cadetMasterList.map(c => c.det))].sort();
-
-    dets.forEach(det => {
-        detSelect.insertAdjacentHTML("beforeend",
-            `<option value="${det}">${det}</option>`
-        );
-    });
-}
-
-/* Load nominal roll */
-function loadNominalRoll() {
-    const det = document.getElementById("detSelect").value;
-    const table = document.getElementById("nominalTable");
-
-    table.innerHTML = `
-        <tr>
-            <th>Surname</th>
-            <th>First Name</th>
-            <th>Present</th>
-        </tr>
-    `;
-
-    if (!det) return;
-
-    let cadets = cadetMasterList
-        .filter(c => c.det === det)
-        .sort((a, b) => a.surname.localeCompare(b.surname));
-
-    cadets.forEach(c => {
-        table.insertAdjacentHTML("beforeend", `
-            <tr>
-                <td>${c.surname}</td>
-                <td>${c.firstname}</td>
-                <td>
-                    <span class="toggle yes" onclick="togglePresent(this)">Yes</span>
-                </td>
-            </tr>
-        `);
-    });
-}
-
-/* Toggle present/absent */
-function togglePresent(el) {
-    if (el.classList.contains("yes")) {
-        el.classList.remove("yes");
-        el.classList.add("no");
-        el.textContent = "No";
-    } else {
-        el.classList.remove("no");
-        el.classList.add("yes");
-        el.textContent = "Yes";
-    }
-}
-
-/* Add new cadet */
-function addCadet() {
-    const surname = newSurname.value.trim();
-    const firstname = newFirstname.value.trim();
-    const rank = newRank.value.trim();
-    const det = document.getElementById("detSelect").value;
-
-    if (!surname || !firstname || !det) {
-        alert("Surname, First Name, and Detachment are required.");
-        return;
-    }
-
-    const id = cadetMasterList.length === 0
-        ? 1
-        : Math.max(...cadetMasterList.map(c => c.id)) + 1;
-
-    cadetMasterList.push({
-        id,
-        surname,
-        firstname,
-        rank,
-        det
-    });
-
-    localStorage.setItem("cadetMasterList", JSON.stringify(cadetMasterList));
-
-    newSurname.value = "";
-    newFirstname.value = "";
-    newRank.value = "";
-
-    loadDetOptions();
-    loadNominalRoll();
-}
-
-/* Save attendance and move to scores */
-function saveAndNext() {
-    const date = document.getElementById("sessionDate").value;
-    const det = document.getElementById("detSelect").value;
-
-    if (!date || !det) {
-        alert("Please select session date and detachment.");
-        return;
-    }
-
-    const rows = [...document.querySelectorAll("#nominalTable tr")].slice(1);
-
-    const attendees = rows.map((row, i) => {
-        const surname = row.children[0].textContent;
-        const firstname = row.children[1].textContent;
-
-        const cadet = cadetMasterList.find(c =>
-            c.surname === surname && c.firstname === firstname && c.det === det
-        );
-
-        const present = row.children[2].children[0].textContent;
-
-        return {
-            id: cadet.id,
-            present
-        };
-    });
-
-    const attendanceData = {
-        sessionDate: date,
-        det,
-        attendees
-    };
-
-    localStorage.setItem("attendanceData", JSON.stringify(attendanceData));
-    localStorage.setItem("lastSessionDate", date);
-
-    window.location.href = "scores.html";
-}
-
-/* Init */
-loadDetOptions();
-</script>
+<button class="btn btn-primary" onclick="saveAttendance()">Continue →</button>
 
 </body>
 </html>
